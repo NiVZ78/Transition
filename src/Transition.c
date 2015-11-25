@@ -271,11 +271,7 @@ static void main_window_load(Window *window) {
   
     // Set the source and dest bitmaps
     source_bitmap = gbitmap_create_with_resource(RESOURCE_ID_SOURCE_IMAGE);
-    dest_bitmap = gbitmap_create_with_resource(RESOURCE_ID_DEST_IMAGE);
-
-APP_LOG(0, "format %d %d", gbitmap_get_format(source_bitmap), gbitmap_get_bytes_per_row(source_bitmap));
-    ;
-  
+    dest_bitmap = gbitmap_create_with_resource(RESOURCE_ID_DEST_IMAGE);  
 }
   
 
