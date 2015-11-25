@@ -127,12 +127,18 @@ static void update_transition_layer(Layer *layer, GContext *ctx) {
   source_bitmap_info.bitmap_data =  gbitmap_get_data(source_bitmap);
   source_bitmap_info.bytes_per_row = gbitmap_get_bytes_per_row(source_bitmap);
   source_bitmap_info.bitmap_format = gbitmap_get_format(source_bitmap);
+#ifdef PBL_SDK_3
+  source_bitmap_info.palette = gbitmap_get_palette(source_bitmap);
+#endif
   
   // get the dest data as an array
   BitmapInfo dest_bitmap_info;
   dest_bitmap_info.bitmap_data =  gbitmap_get_data(dest_bitmap);
   dest_bitmap_info.bytes_per_row = gbitmap_get_bytes_per_row(dest_bitmap);
   dest_bitmap_info.bitmap_format = gbitmap_get_format(dest_bitmap);
+#ifdef PBL_SDK_3
+  dest_bitmap_info.palette = gbitmap_get_palette(dest_bitmap);
+#endif
   
   
   // looping thru screen coordinates
@@ -266,6 +272,9 @@ static void main_window_load(Window *window) {
     // Set the source and dest bitmaps
     source_bitmap = gbitmap_create_with_resource(RESOURCE_ID_SOURCE_IMAGE);
     dest_bitmap = gbitmap_create_with_resource(RESOURCE_ID_DEST_IMAGE);
+
+APP_LOG(0, "format %d %d", gbitmap_get_format(source_bitmap), gbitmap_get_bytes_per_row(source_bitmap));
+    ;
   
 }
   

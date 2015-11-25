@@ -7,6 +7,7 @@ typedef struct {
    uint8_t *bitmap_data;
    int bytes_per_row;
    GBitmapFormat bitmap_format;
+   GColor *palette;
 }  BitmapInfo;  
 
   
