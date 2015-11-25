@@ -21,7 +21,7 @@ int frame_rate = 25;
 int trans_effect = 0;         // No of Transition effect to use
 bool trans_fadein = true;     // True for fade-in, False for fade out
 int32_t trans_length = 500;   // Amount of time transition should take in milliseconds
-float trans_percent;          // How far through the transition we are based on time now minus time started
+uint16_t trans_percent;          // How far through the transition we are based on time now minus time started
 bool trans_running = false;   // Whether a transition is currently animating
 
 
@@ -42,23 +42,26 @@ static int32_t get_ms_time(){
 
 // Main transition drawing function
 static void update_transition_layer(Layer *layer, GContext *ctx) {
-  
+  GRect bounds = layer_get_bounds(layer);
+  uint16_t width = bounds.size.w;
+  uint16_t height = bounds.size.h;
+
   if (trans_percent > 100){
     trans_percent = 100;
     trans_running = false;
   }
   
-  float draw_percent;
+  uint16_t draw_percent;
   
   if (trans_fadein){
     draw_percent = trans_percent;
   }
   else{
-    draw_percent = (float) 100 - trans_percent;
+    draw_percent = 100 - trans_percent;
   };
   
   graphics_context_set_fill_color(ctx, GColorBlack);
-  graphics_fill_rect(ctx, GRect(0, 0, 144, 168), 0, GCornerNone);
+  graphics_fill_rect(ctx, GRect(0, 0, width, height), 0, GCornerNone);
   graphics_context_set_fill_color(ctx, GColorWhite);
   
   // Choose which effect to draw
@@ -66,12 +69,12 @@ static void update_transition_layer(Layer *layer, GContext *ctx) {
   
     case 0:
     // Horizontal wipe
-    graphics_fill_rect(ctx, GRect(0, 0, 144 * (draw_percent/100.0), 168), 0, GCornerNone);
+    graphics_fill_rect(ctx, GRect(0, 0, width * draw_percent/100, height), 0, GCornerNone);
     break;
   
     case 1:
     // Vertical wipe
-    graphics_fill_rect(ctx, GRect(0, 0, 144, 168 * (draw_percent/100.0)), 0, GCornerNone);
+    graphics_fill_rect(ctx, GRect(0, 0, width, height * draw_percent/100), 0, GCornerNone);
     break;
      
     case 2:
@@ -80,33 +83,33 @@ static void update_transition_layer(Layer *layer, GContext *ctx) {
     if(draw_percent >= 1){
       
       //1.414 is used to calculate size of circle to cover given rect
-      graphics_fill_circle(ctx, GPoint(72,84), (168*1.414)*(draw_percent/200.0));
+      graphics_fill_circle(ctx, GPoint(width/2,height/2), (height*draw_percent/200)*1414/1000);
     }  
     break;
   
     case 3:
     // Zoom Square
-    graphics_fill_rect(ctx, GRect(72-(144*(draw_percent/200)), 84-(168*(draw_percent/200)), 144*(draw_percent/100), 168*(draw_percent/100)), 0, GCornerNone);
+    graphics_fill_rect(ctx, GRect(width/2-width*draw_percent/200, height/2-height*draw_percent/200, width*draw_percent/100, height*draw_percent/100), 0, GCornerNone);
     break;
       
     case 4:
     // Horizontal Barn Door 
-    graphics_fill_rect(ctx, GRect(0, 0, 144 * (draw_percent/200), 168), 0, GCornerNone);
-    graphics_fill_rect(ctx, GRect(144 - (144 * (draw_percent/200)), 0, 144, 168), 0, GCornerNone);
+    graphics_fill_rect(ctx, GRect(0, 0, width * draw_percent/200, height), 0, GCornerNone);
+    graphics_fill_rect(ctx, GRect(width - width * draw_percent/200, 0, width, height), 0, GCornerNone);
     break;
     
     case 5:
     // Vertical Barn Door 
-    graphics_fill_rect(ctx, GRect(0, 0, 144, 168 * (draw_percent/200)), 0, GCornerNone);
-    graphics_fill_rect(ctx, GRect(0, 168 - (168 * (draw_percent/200)), 144, 168), 0, GCornerNone);
+    graphics_fill_rect(ctx, GRect(0, 0, width, height * draw_percent/200), 0, GCornerNone);
+    graphics_fill_rect(ctx, GRect(0, height - height * draw_percent/200, width, height), 0, GCornerNone);
     break;
     
     case 6:
     // Four Corners
-    graphics_fill_rect(ctx, GRect(0, 0, 144 * (draw_percent/200), 168 * (draw_percent/200)), 0, GCornerNone);
-    graphics_fill_rect(ctx, GRect(144 - (144 * (draw_percent/200)), 0, 144 * (draw_percent/200) , 168 * (draw_percent/200)), 0, GCornerNone);
-    graphics_fill_rect(ctx, GRect(0, 168 - (168 * (draw_percent/200)), 144 * (draw_percent/200), 168 * (draw_percent/200)), 0, GCornerNone);
-    graphics_fill_rect(ctx, GRect(144 - (144 * (draw_percent/200)), 168 - (168 * (draw_percent/200)), 144 * (draw_percent/200) , 168 * (draw_percent/200)), 0, GCornerNone);
+    graphics_fill_rect(ctx, GRect(0, 0, width * draw_percent/200, height * draw_percent/200), 0, GCornerNone);
+    graphics_fill_rect(ctx, GRect(width - width * draw_percent/200, 0, width * draw_percent/200 , height * draw_percent/200), 0, GCornerNone);
+    graphics_fill_rect(ctx, GRect(0, height - height * draw_percent/200, width * draw_percent/200, height * draw_percent/200), 0, GCornerNone);
+    graphics_fill_rect(ctx, GRect(width - width * draw_percent/200, height - height * draw_percent/200, width * draw_percent/200 , height * draw_percent/200), 0, GCornerNone);
     
   }
   
@@ -124,17 +127,23 @@ static void update_transition_layer(Layer *layer, GContext *ctx) {
   source_bitmap_info.bitmap_data =  gbitmap_get_data(source_bitmap);
   source_bitmap_info.bytes_per_row = gbitmap_get_bytes_per_row(source_bitmap);
   source_bitmap_info.bitmap_format = gbitmap_get_format(source_bitmap);
+#ifdef PBL_SDK_3
+  source_bitmap_info.palette = gbitmap_get_palette(source_bitmap);
+#endif
   
   // get the dest data as an array
   BitmapInfo dest_bitmap_info;
   dest_bitmap_info.bitmap_data =  gbitmap_get_data(dest_bitmap);
   dest_bitmap_info.bytes_per_row = gbitmap_get_bytes_per_row(dest_bitmap);
   dest_bitmap_info.bitmap_format = gbitmap_get_format(dest_bitmap);
+#ifdef PBL_SDK_3
+  dest_bitmap_info.palette = gbitmap_get_palette(dest_bitmap);
+#endif
   
   
   // looping thru screen coordinates
-  for (int y=0; y<168; y++){
-    for (int x=0; x<144; x++){
+  for (int y=0; y<height; y++){
+    for (int x=0; x<width; x++){
           
       switch (get_pixel(fb_bitmap_info, y, x)) {
           // if it's a white pixel (both in Aplite & basalt - display destination)
@@ -171,7 +180,7 @@ static void trans_timer_handler(void *context) {
   //APP_LOG(APP_LOG_LEVEL_DEBUG, "ELAPSED: %d", e);
   
   // Calculate what percentage we are through the context
-  trans_percent = ((float) 100 / trans_length) * (float) elapsed;
+  trans_percent = elapsed * 100 / trans_length;
  
   // Force the layer to update
   layer_mark_dirty(transition_layer);
@@ -262,8 +271,7 @@ static void main_window_load(Window *window) {
   
     // Set the source and dest bitmaps
     source_bitmap = gbitmap_create_with_resource(RESOURCE_ID_SOURCE_IMAGE);
-    dest_bitmap = gbitmap_create_with_resource(RESOURCE_ID_DEST_IMAGE);
-  
+    dest_bitmap = gbitmap_create_with_resource(RESOURCE_ID_DEST_IMAGE);  
 }
   
 
