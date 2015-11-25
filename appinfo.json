@@ -1,0 +1,34 @@
+{
+    "appKeys": {},
+    "capabilities": [
+        ""
+    ],
+    "companyName": "paulniven@aol.com",
+    "longName": "TRANSITION3",
+    "projectType": "native",
+    "resources": {
+        "media": [
+            {
+                "file": "images/ASQ-810_PT.png",
+                "name": "SOURCE_IMAGE",
+                "type": "png"
+            },
+            {
+                "file": "images/PT_C.png",
+                "name": "DEST_IMAGE",
+                "type": "png"
+            }
+        ]
+    },
+    "sdkVersion": "3",
+    "shortName": "TRANSITION3",
+    "targetPlatforms": [
+        "aplite",
+        "basalt"
+    ],
+    "uuid": "61c62058-465d-460f-8dbc-4690912c1ebf",
+    "versionLabel": "1.0",
+    "watchapp": {
+        "watchface": false
+    }
+}
